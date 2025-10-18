@@ -368,3 +368,18 @@ python ejecutar_hilos.py
 3. POSIX Threads Programming: https://computing.llnl.gov/tutorials/pthreads/
 4. Java Concurrency Tutorial: https://docs.oracle.com/javase/tutorial/essential/concurrency/
 5. Python Threading Documentation: https://docs.python.org/3/library/threading.html
+
+
+## Documentación del uso de IA
+
+Uso de LLMs (documentación mínima)
+
+- Se utilizó un LLM como apoyo puntual para:
+   - Validar el enfoque tipo **monitor** para evitar deadlocks: cada filósofo tiene un estado y solo se autoriza comer si sus vecinos no están comiendo. Esto se materializó con `pthread_mutex + pthread_cond` en C (hilos), con **semáforos y memoria compartida** en C (procesos), con **Semaphore** en Java y con `multiprocessing.Semaphore/Lock` en Python.
+   - Recomendar un patrón de **terminación limpia** para permitir reruns sin residuos: bandera de salida y señales para despertar esperas. Aplicado como: `mesa->terminar` + `pthread_cond_broadcast` y `pthread_join` en C (hilos); `sem_destroy` + `munmap` en C (procesos); liberación de semáforos y **cierre de sockets** en `MesaServer` (Java); y finalización ordenada de procesos/hilos con `Value/Array` compartidos en Python.
+   - Diseñar un **protocolo mínimo TCP** para procesos Java reales: comandos `REGISTER`, `TOMAR`, `SOLTAR`, `PING` entre clientes y `MesaServer` usando `ServerSocket/Socket` y `Semaphore`, en lugar de usar RMI u otras colas. Esto está implementado en `procesosreales/MesaServer.java` y clientes.
+   - Afinar detalles de **sincronización en Python** con `multiprocessing`: semáforo por tenedor, `Lock` global y contadores/estados con `Value`/`Array` (ver `solucion_procesos/MesaIPC.py`).
+
+- Verificación local: las implementaciones se ejecutaron y verificaron en **WSL Ubuntu**.
+
+- Criterios finales de diseño: se ajustaron los **nombres y estados**, el **protocolo TCP** y el **formato de impresión** para claridad, trazabilidad y facilidad de rerun. No se usaron semáforos o memoria compartida POSIX con nombre; en su lugar se emplearon semáforos anónimos y memoria compartida vía `mmap` en C (procesos).
