@@ -308,15 +308,6 @@ Implementaciones usan diferentes estrategias:
 
 ---
 
-## 🎓 Contexto Académico
-
-**Universidad:** Universidad San Francisco de Quito (USFQ)  
-**Curso:** Sistemas Operativos  
-**Semestre:** 8vo Semestre  
-**Proyecto:** Deber 2 - Sincronización de Procesos
-
----
-
 ## 🛡️ Manejo de Recursos
 
 Todas las implementaciones garantizan:
@@ -368,31 +359,6 @@ java -cp bin EjecutarHilos
 cd filosofos_python
 python ejecutar_hilos.py
 ```
-
----
-
-## 🚀 Mejoras Futuras
-
-- [ ] Interfaz gráfica para visualización en tiempo real
-- [ ] Métricas detalladas de rendimiento
-- [ ] Configuración de tiempos de pensar/comer
-- [ ] Comparación automática de rendimiento entre implementaciones
-- [ ] Logs persistentes de ejecución
-- [ ] Tests unitarios automatizados
-
----
-
-## 👤 Autor
-
-**Juan Diego**  
-Universidad San Francisco de Quito
-
----
-
-## 📄 Licencia
-
-Este proyecto es material académico desarrollado para el curso de Sistemas Operativos.
-
 ---
 
 ## 🔗 Referencias
