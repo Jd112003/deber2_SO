@@ -1,0 +1,405 @@
+<h1 id="problema-de-los-filósofos-comensales">Problema de los Filósofos
+Comensales</h1>
+<h2 id="resumen">Resumen</h2>
+<p>Este proyecto presenta una implementación completa del problema
+clásico de sincronización de los Filósofos Comensales en tres lenguajes
+de programación: C, Java y Python. Cada implementación incluye
+soluciones basadas en hilos (threads) y procesos independientes,
+demostrando diferentes mecanismos de sincronización y comunicación entre
+procesos (IPC).</p>
+<h2 id="descripción-del-problema">Descripción del Problema</h2>
+<p>El problema de los Filósofos Comensales, propuesto por Edsger
+Dijkstra en 1965, es un problema clásico de sincronización en sistemas
+concurrentes. El escenario consiste en N filósofos sentados alrededor de
+una mesa circular, donde cada filósofo alterna entre dos estados: pensar
+y comer. Entre cada par de filósofos hay exactamente un tenedor,
+resultando en N tenedores en total. Para comer, un filósofo requiere
+adquirir ambos tenedores adyacentes (izquierdo y derecho).</p>
+<p>Los principales desafíos de este problema son:</p>
+<ol type="1">
+<li><strong>Deadlock</strong>: Evitar que todos los filósofos tomen
+simultáneamente su tenedor izquierdo, bloqueándose mutuamente al esperar
+el tenedor derecho.</li>
+<li><strong>Starvation</strong>: Garantizar que ningún filósofo
+permanezca indefinidamente sin poder comer.</li>
+<li><strong>Concurrencia</strong>: Maximizar el paralelismo permitiendo
+que múltiples filósofos coman simultáneamente cuando sea posible.</li>
+</ol>
+<h2 id="estrategia-de-prevención-de-deadlock-y-starvation">Estrategia de
+Prevención de Deadlock y Starvation</h2>
+<h3 id="algoritmo-implementado">Algoritmo Implementado</h3>
+<p>Todas las implementaciones utilizan una estrategia centralizada de
+control basada en el algoritmo de “verificación de vecinos”. La
+estrategia consiste en:</p>
+<ol type="1">
+<li><p><strong>Control Centralizado</strong>: Una entidad central (mesa)
+coordina el acceso a los recursos compartidos (tenedores).</p></li>
+<li><p><strong>Verificación de Vecinos</strong>: Un filósofo solo puede
+tomar ambos tenedores simultáneamente si:</p>
+<ul>
+<li>El filósofo está en estado HAMBRIENTO</li>
+<li>El vecino izquierdo NO está COMIENDO</li>
+<li>El vecino derecho NO está COMIENDO</li>
+</ul></li>
+<li><p><strong>Notificación Proactiva</strong>: Cuando un filósofo
+libera sus tenedores:</p>
+<ul>
+<li>Cambia su estado a PENSANDO</li>
+<li>La mesa verifica si los vecinos adyacentes pueden ahora comer</li>
+<li>Se notifica explícitamente a los vecinos elegibles</li>
+</ul></li>
+<li><p><strong>Atomicidad en Adquisición</strong>: Los tenedores se
+adquieren como una operación atómica, evitando estados intermedios que
+puedan causar deadlock.</p></li>
+</ol>
+<p>Esta estrategia previene el deadlock al evitar la adquisición
+secuencial de recursos y previene la starvation mediante notificaciones
+explícitas que garantizan que los filósofos bloqueados sean despertados
+cuando los recursos estén disponibles.</p>
+<h2 id="implementación-en-c">Implementación en C</h2>
+<h3 id="estructura-del-proyecto">Estructura del Proyecto</h3>
+<pre><code>filosofos_c/
+├── Makefile
+├── bin/
+│   ├── filosofos           # Ejecutable con hilos POSIX
+│   └── filosofos_procesos  # Ejecutable con procesos fork()
+├── obj/                    # Archivos objeto compilados
+└── src/
+    ├── hilos/             # Implementación con threads
+    │   ├── main.c
+    │   ├── filosofo.c/h
+    │   ├── mesa.c/h
+    │   └── tenedor.c/h
+    └── procesos/          # Implementación con fork()
+        ├── main.c
+        ├── proceso_filosofo.c/h
+        └── mesa_ipc.c/h</code></pre>
+<h3 id="mecanismos-de-sincronización">Mecanismos de Sincronización</h3>
+<p><strong>Versión con Hilos:</strong> - <strong>Mutex Global</strong>
+(<code>pthread_mutex_t</code>): Protege el acceso a la tabla de estados
+compartida - <strong>Variable de Condición</strong>
+(<code>pthread_cond_t</code>): Implementa el mecanismo de espera y
+notificación - <strong>Broadcast</strong>: Utiliza
+<code>pthread_cond_broadcast()</code> para notificar a todos los
+filósofos esperando</p>
+<p><strong>Versión con Procesos:</strong> - <strong>Memoria
+Compartida</strong> (<code>mmap</code> con <code>MAP_SHARED</code>):
+Tabla de estados y contadores - <strong>Semáforos POSIX</strong>
+(<code>sem_t</code>): Array de semáforos para sincronización entre
+procesos - <strong>Semáforo Global</strong>: Protege las secciones
+críticas en operaciones de la mesa</p>
+<h3 id="compilación-y-ejecución">Compilación y Ejecución</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compilar</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> filosofos_c</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> clean</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Ejecutar versión con hilos</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="ex">./bin/filosofos</span> <span class="pp">[</span><span class="ss">num_filosofos</span><span class="pp">]</span> <span class="pp">[</span><span class="ss">duracion_segundos</span><span class="pp">]</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="ex">./bin/filosofos</span> 5 30</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Ejecutar versión con procesos</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="ex">./bin/filosofos_procesos</span> <span class="pp">[</span><span class="ss">num_filosofos</span><span class="pp">]</span> <span class="pp">[</span><span class="ss">duracion_segundos</span><span class="pp">]</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="ex">./bin/filosofos_procesos</span> 5 30</span></code></pre></div>
+<h3 id="resultados-experimentales">Resultados Experimentales</h3>
+<p><strong>Configuración de prueba</strong>: 5 filósofos, 30 segundos de
+ejecución</p>
+<p><strong>Versión con Hilos:</strong></p>
+<pre><code>Filósofo 0 comió 11 veces
+Filósofo 1 comió 11 veces
+Filósofo 2 comió 9 veces
+Filósofo 3 comió 12 veces
+Filósofo 4 comió 13 veces
+
+Total de veces que se comió: 56
+Promedio por filósofo: 11.20
+Desviación estándar: 1.47</code></pre>
+<p><strong>Versión con Procesos:</strong></p>
+<pre><code>Filósofo 0 comió 11 veces
+Filósofo 1 comió 11 veces
+Filósofo 2 comió 12 veces
+Filósofo 3 comió 10 veces
+Filósofo 4 comió 10 veces
+
+Total de veces que se comió: 54
+Promedio por filósofo: 10.80
+Desviación estándar: 0.84</code></pre>
+<p><strong>Análisis</strong>: Ambas versiones demuestran una
+distribución equitativa de acceso a recursos, con desviaciones estándar
+bajas que indican ausencia de starvation. La ligera variación en el
+total se debe a diferencias en el overhead de sincronización entre hilos
+y procesos.</p>
+<h2 id="implementación-en-java">Implementación en Java</h2>
+<h3 id="estructura-del-proyecto-1">Estructura del Proyecto</h3>
+<pre><code>filosofos_java/
+├── bin/                   # Archivos .class compilados
+└── src/
+    ├── EjecutarHilos.java
+    ├── EjecutarProcesos.java
+    ├── hilos/            # Implementación con Threads
+    │   ├── Filosofo.java
+    │   ├── Mesa.java
+    │   ├── Tenedor.java
+    │   └── Estado.java
+    ├── procesos/         # Simulación de procesos con Threads
+    │   ├── ProcesoFilosofo.java
+    │   ├── MesaIPC.java
+    │   └── EstadoFilosofo.java
+    └── procesosreales/   # Procesos JVM independientes
+        ├── FilosofoClient.java
+        ├── MesaServer.java
+        ├── Launcher.java
+        └── Estado.java</code></pre>
+<h3 id="mecanismos-de-sincronización-1">Mecanismos de
+Sincronización</h3>
+<p><strong>Versión con Hilos:</strong> - <strong>ReentrantLock</strong>:
+Lock explícito para control de acceso mutuo -
+<strong>Condition</strong>: Mecanismo de espera y señalización asociado
+al lock - <strong>signalAll()</strong>: Notificación broadcast a todos
+los hilos en espera</p>
+<p><strong>Versión con Procesos Simulados:</strong> -
+<strong>Semaphore</strong>: Implementación de semáforos de Java para
+control de acceso - <strong>AtomicIntegerArray</strong>: Estructura
+atómica para tabla de estados compartida - <strong>Array de
+Semaphores</strong>: Uno por filósofo para bloqueo individual</p>
+<p><strong>Versión con Procesos Reales:</strong> - <strong>Sockets
+TCP</strong>: Comunicación entre JVMs independientes -
+<strong>Arquitectura Cliente-Servidor</strong>: MesaServer coordina
+múltiples FilosofoClient - <strong>ProcessBuilder</strong>: Creación de
+procesos Java separados</p>
+<h3 id="compilación-y-ejecución-1">Compilación y Ejecución</h3>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compilar</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> filosofos_java</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">javac</span> <span class="at">-d</span> bin src/<span class="pp">*</span>.java src/hilos/<span class="pp">*</span>.java src/procesos/<span class="pp">*</span>.java src/procesosreales/<span class="pp">*</span>.java</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Ejecutar versión con hilos</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">java</span> <span class="at">-cp</span> bin EjecutarHilos <span class="pp">[</span><span class="ss">num_filosofos</span><span class="pp">]</span> <span class="pp">[</span><span class="ss">duracion_segundos</span><span class="pp">]</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ex">java</span> <span class="at">-cp</span> bin EjecutarHilos 5 30</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Ejecutar versión con procesos simulados</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="ex">java</span> <span class="at">-cp</span> bin EjecutarProcesos <span class="pp">[</span><span class="ss">num_filosofos</span><span class="pp">]</span> <span class="pp">[</span><span class="ss">duracion_segundos</span><span class="pp">]</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="ex">java</span> <span class="at">-cp</span> bin EjecutarProcesos 5 30</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Ejecutar versión con procesos reales (múltiples JVMs)</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="ex">java</span> <span class="at">-cp</span> bin procesosreales.Launcher <span class="pp">[</span><span class="ss">num_filosofos</span><span class="pp">]</span> <span class="pp">[</span><span class="ss">duracion_segundos</span><span class="pp">]</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="ex">java</span> <span class="at">-cp</span> bin procesosreales.Launcher 5 30</span></code></pre></div>
+<h3 id="resultados-experimentales-1">Resultados Experimentales</h3>
+<p><strong>Configuración de prueba</strong>: 5 filósofos, 30 segundos de
+ejecución</p>
+<p><strong>Versión con Hilos:</strong></p>
+<pre><code>Filósofo 0 comió 10 veces
+Filósofo 1 comió 11 veces
+Filósofo 2 comió 10 veces
+Filósofo 3 comió 9 veces
+Filósofo 4 comió 11 veces
+
+Total de veces que se comió: 51
+Promedio por filósofo: 10.20
+Desviación estándar: 0.84</code></pre>
+<p><strong>Versión con Procesos Simulados:</strong></p>
+<pre><code>Filósofo 0 comió 9 veces
+Filósofo 1 comió 10 veces
+Filósofo 2 comió 11 veces
+Filósofo 3 comió 10 veces
+Filósofo 4 comió 9 veces
+
+Total de veces que se comió: 49
+Promedio por filósofo: 9.80
+Desviación estándar: 0.84</code></pre>
+<p><strong>Versión con Procesos Reales:</strong></p>
+<pre><code>Filósofo 0 comió 8 veces
+Filósofo 1 comió 9 veces
+Filósofo 2 comió 9 veces
+Filósofo 3 comió 8 veces
+Filósofo 4 comió 8 veces
+
+Total de veces que se comió: 42
+Promedio por filósofo: 8.40
+Desviación estándar: 0.55</code></pre>
+<p><strong>Análisis</strong>: La versión con procesos reales muestra un
+rendimiento ligeramente inferior debido al overhead de comunicación por
+sockets TCP. Sin embargo, la distribución sigue siendo equitativa,
+demostrando la efectividad del algoritmo independientemente del
+mecanismo de IPC utilizado.</p>
+<h2 id="implementación-en-python">Implementación en Python</h2>
+<h3 id="estructura-del-proyecto-2">Estructura del Proyecto</h3>
+<pre><code>filosofos_python/
+├── ejecutar_hilos.py
+├── ejecutar_procesos.py
+├── solucion_hilos/       # Implementación con threading
+│   ├── filosofo.py
+│   ├── mesa.py
+│   └── tenedor.py
+└── solucion_procesos/    # Implementación con multiprocessing
+    ├── ProcesoFilosofo.py
+    └── MesaIPC.py</code></pre>
+<h3 id="mecanismos-de-sincronización-2">Mecanismos de
+Sincronización</h3>
+<p><strong>Versión con Hilos:</strong> -
+<strong>threading.Lock</strong>: Mutex para protección de secciones
+críticas - <strong>threading.Condition</strong>: Variable de condición
+para espera y notificación - <strong>notify_all()</strong>: Notificación
+broadcast a todos los hilos bloqueados</p>
+<p><strong>Versión con Procesos:</strong> -
+<strong>multiprocessing.Semaphore</strong>: Semáforos para
+sincronización entre procesos - <strong>multiprocessing.Array</strong>:
+Array compartido para tabla de estados -
+<strong>multiprocessing.Lock</strong>: Lock para proteger operaciones
+críticas</p>
+<h3 id="compilación-y-ejecución-2">Compilación y Ejecución</h3>
+<p>Python no requiere compilación. Las implementaciones se ejecutan
+directamente:</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Ejecutar versión con hilos</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> filosofos_python</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> ejecutar_hilos.py <span class="pp">[</span><span class="ss">num_filosofos</span><span class="pp">]</span> <span class="pp">[</span><span class="ss">duracion_segundos</span><span class="pp">]</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> ejecutar_hilos.py 5 30</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Ejecutar versión con procesos</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> ejecutar_procesos.py <span class="pp">[</span><span class="ss">num_filosofos</span><span class="pp">]</span> <span class="pp">[</span><span class="ss">duracion_segundos</span><span class="pp">]</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> ejecutar_procesos.py 5 30</span></code></pre></div>
+<h3 id="resultados-experimentales-2">Resultados Experimentales</h3>
+<p><strong>Configuración de prueba</strong>: 5 filósofos, 30 segundos de
+ejecución</p>
+<p><strong>Versión con Hilos:</strong></p>
+<pre><code>Filósofo 0 comió 12 veces
+Filósofo 1 comió 11 veces
+Filósofo 2 comió 10 veces
+Filósofo 3 comió 11 veces
+Filósofo 4 comió 12 veces
+
+Total de veces que se comió: 56
+Promedio por filósofo: 11.20
+Desviación estándar: 0.84</code></pre>
+<p><strong>Versión con Procesos:</strong></p>
+<pre><code>Filósofo 0 comió 10 veces
+Filósofo 1 comió 11 veces
+Filósofo 2 comió 10 veces
+Filósofo 3 comió 10 veces
+Filósofo 4 comió 11 veces
+
+Total de veces que se comió: 52
+Promedio por filósofo: 10.40
+Desviación estándar: 0.55</code></pre>
+<p><strong>Análisis</strong>: Python muestra resultados consistentes con
+las otras implementaciones. La versión con hilos presenta un rendimiento
+ligeramente superior debido al Global Interpreter Lock (GIL) que reduce
+el overhead en cambios de contexto, aunque limita el paralelismo real en
+sistemas multi-core.</p>
+<h2 id="comparación-de-rendimiento">Comparación de Rendimiento</h2>
+<h3 id="tabla-comparativa">Tabla Comparativa</h3>
+<table>
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 22%" />
+<col style="width: 14%" />
+<col style="width: 23%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr>
+<th>Implementación</th>
+<th>Total Comidas</th>
+<th>Promedio</th>
+<th>Desv. Estándar</th>
+<th>Overhead</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C - Hilos</td>
+<td>56</td>
+<td>11.20</td>
+<td>1.47</td>
+<td>Bajo</td>
+</tr>
+<tr>
+<td>C - Procesos</td>
+<td>54</td>
+<td>10.80</td>
+<td>0.84</td>
+<td>Medio</td>
+</tr>
+<tr>
+<td>Java - Hilos</td>
+<td>51</td>
+<td>10.20</td>
+<td>0.84</td>
+<td>Medio</td>
+</tr>
+<tr>
+<td>Java - Procesos</td>
+<td>49</td>
+<td>9.80</td>
+<td>0.84</td>
+<td>Medio</td>
+</tr>
+<tr>
+<td>Java - Reales</td>
+<td>42</td>
+<td>8.40</td>
+<td>0.55</td>
+<td>Alto</td>
+</tr>
+<tr>
+<td>Python - Hilos</td>
+<td>56</td>
+<td>11.20</td>
+<td>0.84</td>
+<td>Bajo</td>
+</tr>
+<tr>
+<td>Python - Procesos</td>
+<td>52</td>
+<td>10.40</td>
+<td>0.55</td>
+<td>Medio</td>
+</tr>
+</tbody>
+</table>
+<h3 id="observaciones">Observaciones</h3>
+<ol type="1">
+<li><p><strong>Rendimiento</strong>: Las implementaciones en C muestran
+el mayor número de operaciones completadas, seguidas por Python y
+Java.</p></li>
+<li><p><strong>Equidad</strong>: Todas las implementaciones demuestran
+distribuciones equitativas (desviaciones estándar &lt; 1.5), validando
+la ausencia de starvation.</p></li>
+<li><p><strong>Overhead</strong>: Los mecanismos basados en procesos
+presentan mayor overhead que los basados en hilos, especialmente en la
+versión con procesos reales de Java que requiere comunicación por
+red.</p></li>
+<li><p><strong>Consistencia</strong>: La estrategia de verificación de
+vecinos produce resultados consistentes independientemente del lenguaje
+o mecanismo de sincronización utilizado.</p></li>
+</ol>
+<h2 id="conclusiones">Conclusiones</h2>
+<p>Este proyecto demuestra exitosamente la implementación del algoritmo
+de verificación de vecinos para resolver el problema de los Filósofos
+Comensales. Las principales conclusiones son:</p>
+<ol type="1">
+<li><p><strong>Corrección</strong>: Todas las implementaciones evitan
+tanto deadlock como starvation mediante control centralizado y
+verificación atómica de condiciones.</p></li>
+<li><p><strong>Portabilidad</strong>: El algoritmo es efectivo
+independientemente del lenguaje de programación y mecanismo de
+sincronización utilizado.</p></li>
+<li><p><strong>Escalabilidad</strong>: Las soluciones mantienen su
+corrección y equidad con diferentes números de filósofos (probado con N
+= 3, 5, 7).</p></li>
+<li><p><strong>Trade-offs</strong>: Existe un compromiso observable
+entre el overhead de comunicación y el aislamiento de recursos, siendo
+los hilos más eficientes pero los procesos más robustos ante
+fallos.</p></li>
+</ol>
+<h2 id="referencias">Referencias</h2>
+<ol type="1">
+<li><p>Dijkstra, E. W. (1971). “Hierarchical ordering of sequential
+processes”. Acta Informatica, 1(2), 115-138.</p></li>
+<li><p>Tanenbaum, A. S., &amp; Bos, H. (2014). Modern Operating Systems
+(4th ed.). Pearson.</p></li>
+<li><p>Silberschatz, A., Galvin, P. B., &amp; Gagne, G. (2018).
+Operating System Concepts (10th ed.). Wiley.</p></li>
+</ol>

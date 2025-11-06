@@ -111,11 +111,8 @@ int main(int argc, char* argv[]) {
         sem_post(&mesa_ipc_global.sem_espera[i]);
     }
     
-    // Mostrar estadísticas finales
-    mesa_ipc_mostrar_estadisticas(&mesa_ipc_global);
-    
     // Esperar a que todos los procesos terminen naturalmente
-    printf("Esperando a que los procesos terminen...\n");
+    printf("\nEsperando a que los procesos terminen...\n");
     for (int i = 0; i < num_filosofos; i++) {
         waitpid(filosofos_global[i].pid, NULL, 0);
     }
@@ -126,6 +123,9 @@ int main(int argc, char* argv[]) {
     printf("Fin de la simulación\n");
     for (int i = 0; i < 70; i++) printf("=");
     printf("\n\n");
+    
+    // Mostrar estadísticas finales (después de que todos terminaron)
+    mesa_ipc_mostrar_estadisticas(&mesa_ipc_global);
     
     // Limpiar recursos
     mesa_ipc_destroy(&mesa_ipc_global);

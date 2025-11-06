@@ -11,6 +11,7 @@ public class Filosofo implements Runnable {
     private Estado estado;
     private final Random random;
     private final Thread hilo;
+    private int vecesComido;
     
     /**
      * Inicializa un filósofo.
@@ -25,6 +26,7 @@ public class Filosofo implements Runnable {
         this.random = new Random();
         this.hilo = new Thread(this, "Filosofo-" + id);
         this.hilo.setDaemon(true);
+        this.vecesComido = 0;
     }
     
     /**
@@ -48,6 +50,7 @@ public class Filosofo implements Runnable {
      */
     private void comer() {
         estado = Estado.COMIENDO;
+        vecesComido++;
         double tiempo = 1.0 + random.nextDouble() * 2.0;
         System.out.printf("Filósofo %d está COMIENDO por %.2f segundos%n", id, tiempo);
         try {
@@ -101,6 +104,24 @@ public class Filosofo implements Runnable {
     }
     
     /**
+     * Detiene el hilo del filósofo.
+     */
+    public void detener() {
+        hilo.interrupt();
+    }
+    
+    /**
+     * Espera a que el hilo termine.
+     */
+    public void esperar() {
+        try {
+            hilo.join(2000); // Timeout de 2 segundos
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+    
+    /**
      * Obtiene el estado actual del filósofo.
      * 
      * @return Estado actual
@@ -116,5 +137,14 @@ public class Filosofo implements Runnable {
      */
     public int getId() {
         return id;
+    }
+    
+    /**
+     * Obtiene el número de veces que el filósofo ha comido.
+     * 
+     * @return Número de veces que ha comido
+     */
+    public int getVecesComido() {
+        return vecesComido;
     }
 }

@@ -113,6 +113,14 @@ int mesa_ipc_init(MesaIPC* mesa, int num_filosofos) {
                          MAP_SHARED | MAP_ANONYMOUS, -1, 0);
     *mesa->terminar = 0;
     
+    // Asignar memoria compartida para contador de veces que comió cada filósofo
+    mesa->veces_comido = mmap(NULL, num_filosofos * sizeof(int),
+                              PROT_READ | PROT_WRITE,
+                              MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    for (int i = 0; i < num_filosofos; i++) {
+        mesa->veces_comido[i] = 0;
+    }
+    
     return 0;
 }
 
@@ -141,6 +149,9 @@ void mesa_ipc_destroy(MesaIPC* mesa) {
     
     // Liberar bandera de terminación
     munmap(mesa->terminar, sizeof(int));
+    
+    // Liberar contador de veces comido
+    munmap(mesa->veces_comido, mesa->num_filosofos * sizeof(int));
     
     printf("Recursos IPC liberados\n");
 }
@@ -215,20 +226,21 @@ void mesa_ipc_soltar_tenedores(MesaIPC* mesa, int id) {
 
 void mesa_ipc_mostrar_estadisticas(MesaIPC* mesa) {
     printf("\n");
-    for (int i = 0; i < 60; i++) printf("=");
+    for (int i = 0; i < 70; i++) printf("=");
     printf("\n");
     printf("ESTADÍSTICAS FINALES\n");
-    for (int i = 0; i < 60; i++) printf("=");
+    for (int i = 0; i < 70; i++) printf("=");
     printf("\n");
-    printf("Solicitudes atendidas: %d\n", *mesa->solicitudes_atendidas);
     
-    const char* estados[] = {"PENSANDO", "HAMBRIENTO", "COMIENDO"};
+    int total = 0;
     for (int i = 0; i < mesa->num_filosofos; i++) {
-        int estado = mesa->tabla_estados[i];
-        if (estado >= 0 && estado <= 2) {
-            printf("Filósofo %d: %s\n", i, estados[estado]);
-        }
+        printf("Filósofo %d comió %d veces\n", i, mesa->veces_comido[i]);
+        total += mesa->veces_comido[i];
     }
-    for (int i = 0; i < 60; i++) printf("=");
-    printf("\n\n");
+    
+    printf("\nTotal de veces que se comió: %d\n", total);
+    printf("Promedio por filósofo: %.2f\n", (double)total / mesa->num_filosofos);
+    
+    for (int i = 0; i < 70; i++) printf("=");
+    printf("\n");
 }

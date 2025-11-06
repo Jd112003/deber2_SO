@@ -57,6 +57,12 @@ def main():
         print("Fin de la simulación")
         print("="*70 + "\n")
         
+        # Detener todos los filósofos y esperar a que terminen
+        mesa.detener()
+        
+        # Imprimir estadísticas finales
+        mesa.imprimir_estadisticas()
+        
     except KeyboardInterrupt:
         print("\n\nSimulación interrumpida por el usuario.\n")
 

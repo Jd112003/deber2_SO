@@ -79,8 +79,11 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < 70; i++) printf("=");
     printf("\n\n");
     
-    // Limpiar recursos
+    // Limpiar recursos (espera a que terminen los hilos)
     mesa_destroy(&mesa_global);
+    
+    // Imprimir estadísticas finales (después de que todos terminaron)
+    mesa_imprimir_estadisticas(&mesa_global);
     
     return 0;
 }

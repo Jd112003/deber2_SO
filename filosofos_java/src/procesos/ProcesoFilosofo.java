@@ -44,6 +44,7 @@ public class ProcesoFilosofo implements Runnable {
      * Simula el tiempo de comida del filósofo.
      */
     private void comer() {
+        mesaIPC.incrementarVecesComido(id);
         double tiempo = 1.0 + random.nextDouble() * 2.0;
         System.out.printf("[Thread-%d] Filósofo %d está COMIENDO por %.2f segundos%n", 
                          Thread.currentThread().getId(), id, tiempo);

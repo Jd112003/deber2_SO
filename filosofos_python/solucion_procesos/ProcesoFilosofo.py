@@ -49,6 +49,7 @@ class ProcesoFilosofo:
         El tiempo es aleatorio entre 1 y 3 segundos.
         """
         self.estado = Estado.COMIENDO
+        self.mesaIPC.veces_comido[self.id] += 1
         tiempo = random.uniform(1, 3)
         print(f"[PID {os.getpid()}] Filósofo {self.id} está COMIENDO por {tiempo:.2f} segundos")
         time.sleep(tiempo)

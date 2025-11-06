@@ -27,6 +27,7 @@ static void pensar(ProcesoFilosofo* filosofo) {
  * Simula el tiempo de comida del filósofo.
  */
 static void comer(ProcesoFilosofo* filosofo) {
+    filosofo->mesa_ipc->veces_comido[filosofo->id]++;
     int tiempo_ms = random_sleep_time(1000, 3000);
     printf("[PID %d] Filósofo %d está COMIENDO por %.2f segundos\n", 
            getpid(), filosofo->id, tiempo_ms / 1000.0);

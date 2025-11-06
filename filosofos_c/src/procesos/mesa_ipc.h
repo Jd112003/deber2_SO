@@ -16,6 +16,7 @@ typedef struct MesaIPC {
     sem_t* sem_espera;         // Array de semáforos de espera
     int* solicitudes_atendidas; // Contador en memoria compartida
     int* terminar;             // Bandera de terminación en memoria compartida
+    int* veces_comido;         // Array de contadores de veces que comió cada filósofo
 } MesaIPC;
 
 /**

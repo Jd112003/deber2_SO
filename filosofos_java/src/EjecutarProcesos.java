@@ -73,25 +73,30 @@ public class EjecutarProcesos {
             // Ejecutar por el tiempo especificado
             Thread.sleep(duracion * 1000L);
             
-            // Mostrar estadísticas finales
-            System.out.println("\n" + "=".repeat(70));
-            System.out.println("ESTADÍSTICAS FINALES");
-            System.out.println("=".repeat(70));
-            System.out.println(mesaIPC.obtenerEstadisticas());
-            mesaIPC.mostrarEstado();
-            
         } catch (InterruptedException e) {
             System.out.println("\n\nSimulación interrumpida por el usuario.\n");
         } finally {
             // Terminar todos los procesos
-            System.out.println("Terminando procesos...");
+            System.out.println("\nTerminando procesos...");
             for (ProcesoFilosofo filosofo : filosofos) {
                 filosofo.terminar();
+            }
+            
+            // Dar tiempo para que terminen
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
             
             System.out.println("\n" + "=".repeat(70));
             System.out.println("Fin de la simulación");
             System.out.println("=".repeat(70) + "\n");
+            
+            // Imprimir estadísticas finales (después de que todos terminaron)
+            if (mesaIPC != null) {
+                mesaIPC.imprimirEstadisticas();
+            }
         }
         
         // Dar tiempo para que los threads terminen

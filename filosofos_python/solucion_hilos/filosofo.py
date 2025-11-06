@@ -29,6 +29,8 @@ class Filosofo:
         self.estado = Estado.PENSANDO
         self.hilo = threading.Thread(target=self.run, name=f"Filosofo-{id}")
         self.hilo.daemon = True
+        self.veces_comido = 0
+        self._activo = True
     
     def pensar(self):
         """
@@ -46,6 +48,7 @@ class Filosofo:
         El tiempo es aleatorio entre 1 y 3 segundos.
         """
         self.estado = Estado.COMIENDO
+        self.veces_comido += 1
         tiempo = random.uniform(1, 3)
         print(f"Filósofo {self.id} está COMIENDO por {tiempo:.2f} segundos")
         time.sleep(tiempo)
@@ -71,11 +74,23 @@ class Filosofo:
         Bucle infinito que representa el comportamiento del filósofo.
         Ciclo: pensar → pedir tenedores → comer → liberar tenedores
         """
-        while True:
+        while self._activo:
             self.pensar()
+            if not self._activo:
+                break
             self.tomar_tenedores()
+            if not self._activo:
+                break
             self.comer()
+            if not self._activo:
+                break
             self.soltar_tenedores()
+    
+    def detener(self):
+        """
+        Detiene el hilo del filósofo.
+        """
+        self._activo = False
     
     def iniciar(self):
         """

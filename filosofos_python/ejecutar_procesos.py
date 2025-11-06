@@ -64,30 +64,27 @@ def main():
         # Ejecutar por el tiempo especificado
         time.sleep(duracion)
         
-        # Mostrar estadísticas finales
-        print("\n" + "="*70)
-        print("ESTADÍSTICAS FINALES")
-        print("="*70)
-        stats = mesa_ipc.obtener_estadisticas()
-        print(f"Solicitudes atendidas: {stats['solicitudes_atendidas']}")
-        mesa_ipc.mostrar_estado()
-        
     except KeyboardInterrupt:
         print("\n\nSimulación interrumpida por el usuario.\n")
     
     finally:
         # Terminar todos los procesos
-        print("Terminando procesos...")
+        print("\nTerminando procesos...")
         for filosofo in filosofos:
             filosofo.terminar()
-        
-        # Limpiar recursos IPC
-        if mesa_ipc:
-            mesa_ipc.limpiar()
         
         print("\n" + "="*70)
         print("Fin de la simulación")
         print("="*70 + "\n")
+        
+        # Imprimir estadísticas finales (después de que todos terminaron)
+        if mesa_ipc:
+            mesa_ipc.imprimir_estadisticas()
+        
+        # Limpiar recursos IPC
+        if mesa_ipc:
+            mesa_ipc.limpiar()
+
 
 
 if __name__ == "__main__":

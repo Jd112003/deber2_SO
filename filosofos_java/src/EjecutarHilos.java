@@ -59,6 +59,12 @@ public class EjecutarHilos {
             System.out.println("Fin de la simulación");
             System.out.println("=".repeat(70) + "\n");
             
+            // Detener todos los filósofos y esperar a que terminen
+            mesa.detenerCena();
+            
+            // Imprimir estadísticas finales
+            mesa.imprimirEstadisticas();
+            
         } catch (InterruptedException e) {
             System.out.println("\n\nSimulación interrumpida por el usuario.\n");
         }

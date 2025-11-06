@@ -18,6 +18,7 @@ public class MesaIPC {
     private final AtomicIntegerArray tablaEstados;
     private final Semaphore[] semEspera;
     private final AtomicInteger solicitudesAtendidas;
+    private final AtomicIntegerArray vecesComido;
     
     /**
      * Inicializa la mesa IPC con mecanismos de sincronización entre procesos.
@@ -50,6 +51,12 @@ public class MesaIPC {
         
         // Contador de solicitudes atendidas (para estadísticas)
         this.solicitudesAtendidas = new AtomicInteger(0);
+        
+        // Array de contadores de veces que comió cada filósofo
+        this.vecesComido = new AtomicIntegerArray(numFilosofos);
+        for (int i = 0; i < numFilosofos; i++) {
+            vecesComido.set(i, 0);
+        }
     }
     
     /**
@@ -228,5 +235,31 @@ public class MesaIPC {
             System.out.println("Filósofo " + i + ": " + estado);
         }
         System.out.println("=".repeat(60) + "\n");
+    }
+    
+    /**
+     * Incrementa el contador de veces que comió un filósofo.
+     */
+    public void incrementarVecesComido(int id) {
+        vecesComido.incrementAndGet(id);
+    }
+    
+    /**
+     * Imprime las estadísticas finales de la simulación.
+     */
+    public void imprimirEstadisticas() {
+        System.out.println("\n" + "=".repeat(70));
+        System.out.println("ESTADÍSTICAS FINALES");
+        System.out.println("=".repeat(70));
+        
+        int total = 0;
+        for (int i = 0; i < numFilosofos; i++) {
+            System.out.printf("Filósofo %d comió %d veces%n", i, vecesComido.get(i));
+            total += vecesComido.get(i);
+        }
+        
+        System.out.printf("%nTotal de veces que se comió: %d%n", total);
+        System.out.printf("Promedio por filósofo: %.2f%n", (double)total / numFilosofos);
+        System.out.println("=".repeat(70));
     }
 }

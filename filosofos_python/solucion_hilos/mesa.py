@@ -141,3 +141,36 @@ class Mesa:
         """
         for filosofo in self.filosofos:
             filosofo.hilo.join()
+    
+    def detener(self):
+        """
+        Detiene todos los filósofos y espera a que terminen.
+        """
+        print("\nDeteniendo filósofos...")
+        for filosofo in self.filosofos:
+            filosofo.detener()
+        
+        # Despertar a todos los que puedan estar esperando
+        with self.monitor:
+            self.monitor.notify_all()
+        
+        # Esperar a que terminen (timeout por si quedan bloqueados)
+        for filosofo in self.filosofos:
+            filosofo.hilo.join(timeout=2.0)
+    
+    def imprimir_estadisticas(self):
+        """
+        Imprime las estadísticas finales de la simulación.
+        """
+        print(f"\n{'='*70}")
+        print("ESTADÍSTICAS FINALES")
+        print(f"{'='*70}")
+        
+        total = 0
+        for filosofo in self.filosofos:
+            print(f"Filósofo {filosofo.id} comió {filosofo.veces_comido} veces")
+            total += filosofo.veces_comido
+        
+        print(f"\nTotal de veces que se comió: {total}")
+        print(f"Promedio por filósofo: {total / self.num_filosofos:.2f}")
+        print(f"{'='*70}")

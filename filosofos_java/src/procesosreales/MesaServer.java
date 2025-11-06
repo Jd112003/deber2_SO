@@ -25,6 +25,7 @@ public class MesaServer {
     private final AtomicIntegerArray tablaEstados;
     private final Semaphore[] semEspera;
     private final AtomicInteger solicitudesAtendidas;
+    private final AtomicIntegerArray vecesComido;
     private ServerSocket serverSocket;
     private volatile boolean activo = true;
     private final List<ClientHandler> clientes;
@@ -56,6 +57,12 @@ public class MesaServer {
         }
         
         this.solicitudesAtendidas = new AtomicInteger(0);
+        
+        // Array de contadores de veces que comió cada filósofo
+        this.vecesComido = new AtomicIntegerArray(numFilosofos);
+        for (int i = 0; i < numFilosofos; i++) {
+            vecesComido.set(i, 0);
+        }
     }
     
     /**
@@ -69,6 +76,12 @@ public class MesaServer {
         System.out.println("Escuchando en puerto: " + puerto);
         System.out.println("Numero de filosofos: " + numFilosofos);
         System.out.println("=".repeat(70) + "\n");
+        
+        // Agregar shutdown hook para imprimir estadísticas al terminar
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("\n\nServidor cerrándose...");
+            mostrarEstadisticas();
+        }));
         
         // Hilo para aceptar conexiones
         Thread acceptThread = new Thread(() -> {
@@ -211,16 +224,17 @@ public class MesaServer {
      */
     private void mostrarEstadisticas() {
         System.out.println("\n" + "=".repeat(70));
-        System.out.println("ESTADISTICAS FINALES DEL SERVIDOR");
+        System.out.println("ESTADÍSTICAS FINALES");
         System.out.println("=".repeat(70));
-        System.out.println("Solicitudes atendidas: " + solicitudesAtendidas.get());
         
-        String[] estados = {"PENSANDO", "HAMBRIENTO", "COMIENDO"};
+        int total = 0;
         for (int i = 0; i < numFilosofos; i++) {
-            int estadoVal = tablaEstados.get(i);
-            String estadoNombre = (estadoVal >= 0 && estadoVal < 3) ? estados[estadoVal] : "DESCONOCIDO";
-            System.out.println("Filosofo " + i + ": " + estadoNombre);
+            System.out.printf("Filósofo %d comió %d veces%n", i, vecesComido.get(i));
+            total += vecesComido.get(i);
         }
+        
+        System.out.printf("%nTotal de veces que se comió: %d%n", total);
+        System.out.printf("Promedio por filósofo: %.2f%n", (double)total / numFilosofos);
         System.out.println("=".repeat(70) + "\n");
     }
     
@@ -278,6 +292,12 @@ public class MesaServer {
                 case "SOLTAR":
                     int idSoltar = Integer.parseInt(partes[1]);
                     soltarTenedores(idSoltar);
+                    out.println("OK");
+                    break;
+                
+                case "COMER":
+                    int idComer = Integer.parseInt(partes[1]);
+                    vecesComido.incrementAndGet(idComer);
                     out.println("OK");
                     break;
                     

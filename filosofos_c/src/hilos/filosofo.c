@@ -37,6 +37,7 @@ static void pensar(Filosofo* filosofo) {
  */
 static void comer(Filosofo* filosofo) {
     filosofo->estado = COMIENDO;
+    filosofo->veces_comido++;
     int tiempo_ms = random_sleep_time(1000, 3000);
     printf("Filósofo %d está COMIENDO por %.2f segundos\n", 
            filosofo->id, tiempo_ms / 1000.0);
@@ -64,6 +65,7 @@ void filosofo_init(Filosofo* filosofo, int id, Mesa* mesa) {
     filosofo->id = id;
     filosofo->mesa = mesa;
     filosofo->estado = PENSANDO;
+    filosofo->veces_comido = 0;
 }
 
 void* filosofo_run(void* arg) {

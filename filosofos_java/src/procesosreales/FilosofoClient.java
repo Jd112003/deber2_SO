@@ -80,11 +80,16 @@ public class FilosofoClient {
     /**
      * Simula el tiempo de comida.
      */
-    private void comer() {
+    private void comer() throws IOException {
         double tiempo = 1.0 + random.nextDouble() * 2.0;
         long pid = ProcessHandle.current().pid();
         System.out.printf("[PID %d] Filosofo %d esta COMIENDO por %.2f segundos%n", 
                          pid, id, tiempo);
+        
+        // Notificar al servidor que está comiendo
+        out.println("COMER:" + id);
+        String respuesta = in.readLine();
+        
         try {
             Thread.sleep((long)(tiempo * 1000));
         } catch (InterruptedException e) {

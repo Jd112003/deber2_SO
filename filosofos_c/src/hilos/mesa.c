@@ -153,3 +153,24 @@ void mesa_esperar(Mesa* mesa) {
         pthread_join(mesa->filosofos[i].hilo, NULL);
     }
 }
+
+void mesa_imprimir_estadisticas(Mesa* mesa) {
+    printf("\n");
+    for (int i = 0; i < 70; i++) printf("=");
+    printf("\n");
+    printf("ESTADÍSTICAS FINALES\n");
+    for (int i = 0; i < 70; i++) printf("=");
+    printf("\n");
+    
+    int total = 0;
+    for (int i = 0; i < mesa->num_filosofos; i++) {
+        printf("Filósofo %d comió %d veces\n", i, mesa->filosofos[i].veces_comido);
+        total += mesa->filosofos[i].veces_comido;
+    }
+    
+    printf("\nTotal de veces que se comió: %d\n", total);
+    printf("Promedio por filósofo: %.2f\n", (double)total / mesa->num_filosofos);
+    
+    for (int i = 0; i < 70; i++) printf("=");
+    printf("\n");
+}

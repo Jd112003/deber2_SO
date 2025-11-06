@@ -44,6 +44,9 @@ class MesaIPC:
         
         # Contador de solicitudes atendidas (para estadísticas)
         self.solicitudes_atendidas = multiprocessing.Value('i', 0)
+        
+        # Array de contadores de veces que comió cada filósofo
+        self.veces_comido = Array('i', [0] * num_filosofos)
     
     def izq(self, i: int) -> int:
         """
@@ -284,3 +287,20 @@ class MesaIPC:
         self.cola_mensajes.join_thread()
         
         print("Recursos IPC liberados")
+    
+    def imprimir_estadisticas(self):
+        """
+        Imprime las estadísticas finales de la simulación.
+        """
+        print(f"\n{'='*70}")
+        print("ESTADÍSTICAS FINALES")
+        print(f"{'='*70}")
+        
+        total = 0
+        for i in range(self.num_filosofos):
+            print(f"Filósofo {i} comió {self.veces_comido[i]} veces")
+            total += self.veces_comido[i]
+        
+        print(f"\nTotal de veces que se comió: {total}")
+        print(f"Promedio por filósofo: {total / self.num_filosofos:.2f}")
+        print(f"{'='*70}")

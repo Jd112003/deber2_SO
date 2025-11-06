@@ -64,4 +64,11 @@ void mesa_soltar_tenedores(Mesa* mesa, int i);
  */
 void mesa_esperar(Mesa* mesa);
 
+/**
+ * Imprime las estadísticas finales de la simulación.
+ * 
+ * @param mesa Puntero a la mesa
+ */
+void mesa_imprimir_estadisticas(Mesa* mesa);
+
 #endif // MESA_H

@@ -23,6 +23,7 @@ typedef struct {
     Mesa* mesa;
     Estado estado;
     pthread_t hilo;
+    int veces_comido;
 } Filosofo;
 
 /**

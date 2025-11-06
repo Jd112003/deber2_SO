@@ -155,4 +155,49 @@ public class Mesa {
             filosofo.iniciar();
         }
     }
+    
+    /**
+     * Detiene todos los filósofos y espera a que terminen.
+     */
+    public void detenerCena() {
+        System.out.println("\nDeteniendo filósofos...");
+        
+        // Interrumpir todos los hilos
+        for (Filosofo filosofo : filosofos) {
+            filosofo.detener();
+        }
+        
+        // Despertar a todos los que estén esperando
+        mutexMesa.lock();
+        try {
+            monitor.signalAll();
+        } finally {
+            mutexMesa.unlock();
+        }
+        
+        // Esperar a que terminen
+        for (Filosofo filosofo : filosofos) {
+            filosofo.esperar();
+        }
+    }
+    
+    /**
+     * Imprime las estadísticas finales de la simulación.
+     */
+    public void imprimirEstadisticas() {
+        System.out.println("\n" + "=".repeat(70));
+        System.out.println("ESTADÍSTICAS FINALES");
+        System.out.println("=".repeat(70));
+        
+        int total = 0;
+        for (Filosofo filosofo : filosofos) {
+            System.out.printf("Filósofo %d comió %d veces%n", 
+                            filosofo.getId(), filosofo.getVecesComido());
+            total += filosofo.getVecesComido();
+        }
+        
+        System.out.printf("%nTotal de veces que se comió: %d%n", total);
+        System.out.printf("Promedio por filósofo: %.2f%n", (double)total / numFilosofos);
+        System.out.println("=".repeat(70));
+    }
 }
